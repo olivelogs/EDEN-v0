@@ -1,0 +1,24 @@
+regions:
+  - uid: "l3_007_central_california_valley"
+    scheme: "EPA_US"
+    level: 3
+    code: "7"
+    name: "Central California Valley"
+
+  - uid: "l3_025_high_plains"
+    scheme: "EPA_US"
+    level: 3
+    code: "25"
+    name: "High Plains"
+
+  - uid: "l3_070_western_allegheny_plateau"
+    scheme: "EPA_US"
+    level: 3
+    code: "70"
+    name: "Western Allegheny Plateau"
+
+  - uid: "l3_076_southern_florida_coastal_plain"
+    scheme: "EPA_US"
+    level: 3
+    code: "76"
+    name: "Southern Florida Coastal Plain"
