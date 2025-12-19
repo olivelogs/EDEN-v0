@@ -1,0 +1,12 @@
+name: eden
+channels:
+  - conda-forge
+  - defaults
+  - bioconda
+dependencies:
+  - numpy
+  - pyyaml
+  - pandas
+  - geopandas
+  - ipykernel
+prefix: /Users/olivelo/opt/miniconda3/envs/eden

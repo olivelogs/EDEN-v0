@@ -6,23 +6,24 @@ I have not yet pulled the data for soil, climate, landcover. I'll get there.
 
 ### Ecoregions  
 
-Sticking to L3. North America CEC codes use hierarchal dotted codes (8 -> 8.1 -> 8.1.6); these only go to level III. CONUS EPA codes for level III and IV use alphanumeric (56 at level III or 56h at level IV). In config.yaml, I'm using the EPA alphanumeric codes in UID. Scheme: EPA_US. When I add in North America (in v1) scheme will change to EPA_CEC for the rest of the codes.  
+Sticking to L3. North America CEC codes use hierarchal dotted codes (8 -> 8.1 -> 8.1.6); these only go to level III. CONUS EPA codes for level III and IV use alphanumeric (56 at level III or 56h at level IV). In regions_v0.yaml, I'm using the EPA alphanumeric codes in UID. Scheme: EPA_US. When I add in North America (in v1) scheme will change to EPA_CEC for the rest of the codes.  
 
 ### Soil  
 
 SSURGO: gNATSGO
-This seems to contain 2025 data only. Which is fine because it is soil.  
+This seems to contain 2025 data only?  
+Manual download  
 
 ### Climate  
 
 CHELSA  
 bioclim: 1981-2010 timestep; global.  
-CHANGE (12-14-25): CHELSA-monthly.  
+CHANGE (12-14-25): use CHELSA-monthly.  
+CHELSA data are COGs. Use that.
 
 ### Landcover  
 
 Multi-Resolution Land Characteristics (MRLC)  
-CONUS; what is the difference between 1995-2004 and just 2004? Does it show land cover change?  
 Select a year, maybe two. Recent will be higher-res, i assume.  
 
 ## Scripts
@@ -38,6 +39,9 @@ in: ```./src/geo/```
 - optionally dissolves to 1 row per ecoregion
 - writes ```ecoregions_selected.gpkg```
 - optionally writes a QA CSV (areas, etc.)
+
+**1.1** ```01_region_selection.ipynb```  
+pulls those bounds so i can read them, then use them in regions_v0.yaml for fetch scripts.  
 
 2. ```clip_rasters.py```  
 in: ```./src/geo/```

@@ -1,0 +1,98 @@
+sources:
+  chelsa-monthly:
+    provider: CHELSA
+    model: CHELSA V2.1
+    product: CHELSA-monthly
+    version: 2.1
+    type: raster
+    format: cog
+    coverage: global
+    base_url: "https://os.unil.cloud.switch.ch/chelsa02/chelsa"
+    coverage_path: "global"
+    temporal_path: "monthly"
+    temporal:
+      kind: monthly
+      start_year: 1979
+      end_year: 2022
+      months: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+    vars_active: [pr, tas]
+    vars:
+      clt:
+        var_name: Total Cloud Cover Percentage
+        var_units: "percent"
+        active: false
+      cmi: 
+        var_name: Monthly Climate Moisture Index
+        var_units: "kg m-2 month-1"
+        active: false
+      hurs:
+        var_name: Near-Surface Relative Humidity
+        var_units: "percent"
+        active: false
+      pet:
+        var_name: Monthly Potential Evapotranspiration
+        var_units: "kg m-2 month-1"
+        active: false
+      pr:
+        var_name: Precipitation
+        var_units: "kg m-2 month-1"
+        active: true
+      rsds:
+        var_name: Surface Downwelling Shortwave Flux in Air
+        var_units: "MJ m-2"
+        active: false
+      sfcWind:
+        var_name: Near-Surface Wind Speed
+        var_units: "m s-1"
+        active: false
+      spei12:
+        var_name: Standardized Precipitation Evapotranspiration Index
+        var_units: "1"
+        active: false
+      spi12:
+        var_name: Standardized Precipitation Index
+        var_units: "1"
+        active: false
+      tas:
+        var_name: Daily Mean Near-Surface Air Temperature
+        var_units: "K"
+        active: true
+      tasmax:
+        var_name: Daily Maximum Near-Surface Air Temperature
+        var_units: "K"
+        active: false
+      tasmin:
+        var_name: Daily Minimum Near-Surface Air Temperature
+        var_units: "K"
+        active: false
+      vpd:
+        var_name: Vapor Pressure Deficit
+        var_units: "Pa"
+        active: false
+    url_template: "{base_url}/{coverage_path}/{temporal_path}/{var}/{year}/CHELSA_{var}_{month}_{year}_V.{version}.tif"
+    cache: true
+    notes: "Use bbox clipping for CONUS to avoid huge downloads. convert K to C later."
+
+  gnatsgo:
+    provider: NRCS
+    type: raster
+    coverage: conus
+    pub_date: 2025
+    local_glob: "data/raw/soils/gnatsgo/**/*.tif"
+    notes: "SSURGO where available; filled with STATSGO2 elsewhere. Downloaded from Box, see README for instructions."
+
+  nlcd:
+    provider: MRLC
+    product: "LndCov"
+    collection: 1
+    version: 1
+    type: raster
+    coverage: conus
+    base_url: "https://www.mrlc.gov/downloads/sciweb1/shared/mrlc/data-bundles"
+    coverage_code: "CU"
+    temporal_path: "Annual"
+    temporal:
+      kind: annual
+      start_year: 1985
+      end_year: 2024
+    url_template: "{base_url}/{temporal_path}_NLCD_{product}_{year}_{coverage_code}_C{collection}V{version}.zip"
