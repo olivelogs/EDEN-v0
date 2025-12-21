@@ -37,7 +37,7 @@ def _normalize_code(x) -> str:
     """Normalize ecoregion code to a comparable string. Handles ints, '07', ' 7 '."""
     if x is None:
         return ""
-    s = str(x).strip()
+    s = str(x).strip() # removes whitespaces before regex..
     # pull first alnum token (handles '56h', '07', etc.)
     m = re.search(r"[A-Za-z0-9]+", s)
     if not m:
@@ -48,8 +48,9 @@ def _normalize_code(x) -> str:
         token = str(int(token))
     return token
 
-
+# scold you for bad config
 def _load_regions_yaml(path: Path) -> List[dict]:
+    # Path is an argument?
     data = yaml.safe_load(path.read_text())
     if not isinstance(data, dict) or "regions" not in data or not isinstance(data["regions"], list):
         raise ValueError(f"{path} must be a YAML mapping with a top-level 'regions:' list.")
@@ -68,7 +69,7 @@ def _pick_code_field(columns: List[str], preferred: Optional[str] = None) -> str
             return preferred
         raise ValueError(f"--code-field '{preferred}' not found. Available columns: {columns}")
 
-    candidates = []
+    candidates = [] # making a dict?
     for c in columns:
         cl = c.lower()
         score = 0
@@ -133,7 +134,7 @@ def _compute_area_km2(gdf: gpd.GeoDataFrame, area_crs: str = "EPSG:5070") -> Lis
     tmp = gdf.to_crs(area_crs)
     return (tmp.geometry.area / 1_000_000.0).astype(float).tolist()
 
-
+# args
 def main(argv: Optional[List[str]] = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--regions-yaml", required=True, type=Path, help="YAML listing regions to select.")

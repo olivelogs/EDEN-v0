@@ -2,7 +2,16 @@
   
 ## Data  
 
-I have not yet pulled the data for soil, climate, landcover. I'll get there.
+Data fetch:  
+- `src/ingest/fetch.py` = the CLI front door  
+- `src/ingest/sources/chelsa.py`, `src/ingest/sources/nlcd.py` = source-specific logic  
+- `config/sources.yaml` = metadata registry (URLs/templates, versions, variables, caching rules, etc.)  
+- one command style (python -m src.ingest.fetch ...)  
+- shared caching/logging/path handling  
+- source modules stay isolated (so CHELSA changes don’t break soils)  
+usage:
+`python -m src.ingest.fetch chelsa-monthly --vars tas pr --start 2011 --end 2020 --aoi conus`   
+`python -m src.ingest.fetch nlcd --year 2016 --aoi conus`  
 
 ### Ecoregions  
 

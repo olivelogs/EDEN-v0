@@ -4,21 +4,25 @@ regions:
     level: 3
     code: "7"
     name: "Central California Valley"
+    bounds: [-105.2905959881059, 31.24640492063735, -99.98732968804357, 43.52244399079329]
 
   - uid: "l3_025_high_plains"
     scheme: "EPA_US"
     level: 3
     code: "25"
     name: "High Plains"
+    bounds: [-122.44880693738553, 34.926694863035934, -118.59042729491934, 40.22189418601387]
 
   - uid: "l3_070_western_allegheny_plateau"
     scheme: "EPA_US"
     level: 3
     code: "70"
     name: "Western Allegheny Plateau"
+    bounds: [-84.27050247251928, 37.1159033299228, -78.66885739747221, 41.43535203116498]
 
   - uid: "l3_076_southern_florida_coastal_plain"
     scheme: "EPA_US"
     level: 3
     code: "76"
     name: "Southern Florida Coastal Plain"
+    bounds: [-82.16572621480822, 24.5439344938386, -80.0310975038927, 27.207226731531915]
