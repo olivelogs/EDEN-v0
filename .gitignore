@@ -9,3 +9,9 @@
 ############
 *.7z
 *.zip
+
+# Folders #
+###########
+tests/__pycache__/
+src/geo/__pycache__/
+.pytest_cache/
