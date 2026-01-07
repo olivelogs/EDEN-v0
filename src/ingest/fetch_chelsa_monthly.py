@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Docstring for src.ingest.fetch_chelsa_monthly
+fetch_chelsa_monthly.py
 """
 
 # for var in vars
