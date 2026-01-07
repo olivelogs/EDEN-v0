@@ -1,9 +1,22 @@
 # Notes  
-  
+
+## overview
+
+**in-progress task:** fetch scripts -> CLI
+
+v0 reconstructs ecoregions from public data: soil, climate, landcover... once that is done we will build a model to infer ecosystem dynamics. goal: get it to report soil moisture changes after rain. that is all.
+
+CLI will call other scripts... should check if file structure is good.
+
+## general
+
+use conda env eden
+note to self: always branch before edits, or cry later.
+
 ## Data  
 
 Data fetch:  
-- `src/ingest/fetch.py` = the CLI front door  
+- `src/ingest/fetch.py`
 - `src/ingest/sources/chelsa.py`, `src/ingest/sources/nlcd.py` = source-specific logic  
 - `config/sources.yaml` = metadata registry (URLs/templates, versions, variables, caching rules, etc.)  
 - one command style (python -m src.ingest.fetch ...)  
@@ -37,27 +50,27 @@ Select a year, maybe two. Recent will be higher-res, i assume.
 
 ## Scripts
 
-1. ```prep_ecoregions.py```  
-in: ```./src/geo/```  
+this has gotten out of hand. need to update.
 
-- reads ```regions.yaml``` (scheme/level/code + scheme-agnostic ```uid```)
-- loads the EPA CONUS Level III shapefile (```data/raw/boundaries/epa_ecoregions/conus_level3.shp```)
-- auto-detects the “Level III code” column
+`prep_ecoregions.py`  
+
+- reads `regions.yaml` (scheme/level/code + scheme-agnostic `uid`)  
+- loads the EPA CONUS Level III shapefile (`data/raw/boundaries/epa_ecoregions/conus_level3.shp`)  
+- auto-detects the “Level III code” column  
 - normalizes codes ("07", 7, "7" all match)
 - fixes invalid geometries
 - optionally dissolves to 1 row per ecoregion
-- writes ```ecoregions_selected.gpkg```
+- writes `ecoregions_selected.gpkg`
 - optionally writes a QA CSV (areas, etc.)
 
-**1.1** ```01_region_selection.ipynb```  
-pulls those bounds so i can read them, then use them in regions_v0.yaml for fetch scripts.  
+`01_region_selection.ipynb`  
+pulls those bounds so i can read them, then use them in regions_v0.yaml for fetch scripts. todo: add this to prep_ecoregions to get it done in one go.  
 
-2. ```clip_rasters.py```  
-in: ```./src/geo/```
+`fetch.py`
+it follows a URL template, using sources.yaml, and pulls the data from those sources. each data source has its own quirks,
 
-make CHELSA/NLCD/soils stop being enormous
+`clip_rasters.py`  
+make CHELSA/NLCD/soils stop being enormous. may be good to tie this into the fetch scripts, get it done right away.
 
-3. ```zonal_stats.py```
-in: ```./src/geo/```
-
+`zonal_stats.py`  
 turn pixels into features

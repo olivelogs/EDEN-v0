@@ -71,7 +71,7 @@ sources:
         active: false
     url_template: "{base_url}/{coverage_path}/{temporal_path}/{var}/{year}/CHELSA_{var}_{month}_{year}_V.{version}.tif"
     cache: true
-    notes: "Use bbox clipping for CONUS to avoid huge downloads. convert K to C later."
+    notes: "chelsa files are COGs. convert K to C later."
 
   gnatsgo:
     provider: NRCS
@@ -89,7 +89,11 @@ sources:
     type: raster
     coverage: conus
     base_url: "https://www.mrlc.gov/downloads/sciweb1/shared/mrlc/data-bundles"
-    coverage_code: "CU"
+    coverage_map:
+      conus: "CU"
+      alaska: "AK"
+      hawaii: "HI"
+    default_coverage: conus
     temporal_path: "Annual"
     temporal:
       kind: annual

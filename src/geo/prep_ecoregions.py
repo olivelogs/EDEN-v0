@@ -50,7 +50,6 @@ def _normalize_code(x) -> str:
 
 # scold you for bad config
 def _load_regions_yaml(path: Path) -> List[dict]:
-    # Path is an argument?
     data = yaml.safe_load(path.read_text())
     if not isinstance(data, dict) or "regions" not in data or not isinstance(data["regions"], list):
         raise ValueError(f"{path} must be a YAML mapping with a top-level 'regions:' list.")
@@ -260,6 +259,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     return 0
 
+#TODO: add bounds extraction to this script and print. see 01_region_selection.ipynb for this chunk.
 
 if __name__ == "__main__":
     raise SystemExit(main())
