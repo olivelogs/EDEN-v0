@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eden"
+version = "0.1.0"
+description = "EDEN v0: Ecological Digital Earth Network"
+requires-python = ">=3.9"
+
+# Optional but nice
+authors = [
+  { name = "Olive" }
+]
+
+# You can add this later when you want
+dependencies = [
+  # keep empty or minimal for now
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

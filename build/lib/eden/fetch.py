@@ -32,7 +32,6 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import yaml
 
-# TODO: add ecoregion shapefile download to this? i downloaded those manually but if i'm doing fetch already...
 
 # -----------------------------
 # YAML + AOI helpers
