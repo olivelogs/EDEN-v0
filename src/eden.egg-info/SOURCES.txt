@@ -1,9 +1,9 @@
 README.md
 pyproject.toml
 src/eden/__init__.py
-src/eden/cli.py
+src/eden/config.py
 src/eden/fetch.py
-src/eden/verify.py
+src/eden/geo.py
 src/eden.egg-info/PKG-INFO
 src/eden.egg-info/SOURCES.txt
 src/eden.egg-info/dependency_links.txt

@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """eden.fetch
 
-Small, v0-friendly fetch CLI.
+Data ingestion CLI for EDEN.
+
+This is one of several EDEN subsystem CLIs:
+- eden.fetch  → data ingestion (this file)
+- eden.geo    → geospatial processing
+- eden.features → feature engineering (TODO)
+- eden.model  → ecosystem modeling (TODO)
 
 Design goals:
-- One entrypoint for ingestion only (not geo/features/model yet)
+- One entrypoint for ingestion only
 - One level of subcommands (dataset names)
 - Config-driven defaults via YAML
 - Optional verify mode that can check *all* sources (or one)
@@ -28,80 +34,19 @@ import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-import yaml
+# Import shared config utilities from eden.config
+# These are now centralized to avoid duplication across subsystem CLIs
+from eden.config import (
+    load_yaml,
+    aoi_from_regions_yaml,
+    format_bbox,
+    DEFAULT_SOURCES_YAML,
+    DEFAULT_REGIONS_YAML,
+)
 
 # TODO: add ecoregion shapefile download to this? i downloaded those manually but if i'm doing fetch already...
-
-# -----------------------------
-# YAML + AOI helpers
-# -----------------------------
-
-def _load_yaml(path: Path) -> Dict[str, Any]:
-    if not path.exists():
-        raise SystemExit(f"Config not found: {path}")
-    with path.open("r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
-    if not isinstance(data, dict):
-        raise SystemExit(f"Expected YAML mapping at {path}")
-    return data
-
-
-def _coerce_bbox(x: Any) -> Optional[Tuple[float, float, float, float]]:
-    """Try to coerce [xmin, ymin, xmax, ymax] into a bbox tuple."""
-    if x is None:
-        return None
-    if isinstance(x, (list, tuple)) and len(x) == 4:
-        try:
-            xmin, ymin, xmax, ymax = map(float, x)
-            return (xmin, ymin, xmax, ymax)
-        except Exception:
-            return None
-    return None
-
-
-def _union_bbox(bboxes: Iterable[Tuple[float, float, float, float]]) -> Optional[Tuple[float, float, float, float]]:
-    bboxes = list(bboxes)
-    if not bboxes:
-        return None
-    xmin = min(b[0] for b in bboxes)
-    ymin = min(b[1] for b in bboxes)
-    xmax = max(b[2] for b in bboxes)
-    ymax = max(b[3] for b in bboxes)
-    return (xmin, ymin, xmax, ymax)
-
-
-def _aoi_from_regions_yaml(regions_yaml: Dict[str, Any]) -> Optional[Tuple[float, float, float, float]]:
-    """Resolve AOI bbox from a regions YAML.
-
-    Accepts either:
-    - top-level `bounds: [xmin, ymin, xmax, ymax]`
-    - per-region entries with `bounds: [...]` under `regions:`
-
-    Returns bbox in the same CRS you computed it in (likely EPSG:4326).
-    """
-    # Top-level bounds
-    bbox = _coerce_bbox(regions_yaml.get("bounds"))
-    if bbox:
-        return bbox
-
-    # Per-region bounds
-    regions = regions_yaml.get("regions")
-    if isinstance(regions, list):
-        bboxes: List[Tuple[float, float, float, float]] = []
-        for r in regions:
-            if isinstance(r, dict):
-                b = _coerce_bbox(r.get("bounds"))
-                if b:
-                    bboxes.append(b)
-        return _union_bbox(bboxes)
-
-    return None
-
-
-def _format_bbox(b: Tuple[float, float, float, float]) -> str:
-    return f"[{b[0]:.5f}, {b[1]:.5f}, {b[2]:.5f}, {b[3]:.5f}]"
 
 
 # -----------------------------
@@ -164,8 +109,9 @@ def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="eden.fetch", description="Fetch/verify datasets for EDEN-v0")
 
     # Global args (available for all subcommands)
-    ap.add_argument("--sources-yaml", type=Path, default=Path("config/sources.yaml"), help="Path to sources.yaml")
-    ap.add_argument("--regions-yaml", type=Path, default=Path("config/regions_v0.yaml"), help="Path to regions YAML (for AOI bounds)")
+    # Default paths are centralized in eden.config for consistency across CLIs
+    ap.add_argument("--sources-yaml", type=Path, default=DEFAULT_SOURCES_YAML, help=f"Path to sources.yaml (default: {DEFAULT_SOURCES_YAML})")
+    ap.add_argument("--regions-yaml", type=Path, default=DEFAULT_REGIONS_YAML, help=f"Path to regions YAML (default: {DEFAULT_REGIONS_YAML})")
     ap.add_argument("--overwrite", action="store_true", help="Ignore cache and re-download/rewrite outputs")
     ap.add_argument("--dry-run", action="store_true", help="Print planned actions without downloading/writing")
     ap.add_argument("--limit", type=int, default=None, help="Debug: only process first N items")
@@ -199,11 +145,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = ap.parse_args(argv)
 
     # Load YAMLs only once, inside main (so import doesn't have side effects)
-    sources_yaml = _load_yaml(args.sources_yaml)
-    regions_yaml = _load_yaml(args.regions_yaml)
+    # Using shared loaders from eden.config
+    sources_yaml = load_yaml(args.sources_yaml)
+    regions_yaml = load_yaml(args.regions_yaml)
 
     # Resolve AOI bbox (for commands that need it)
-    aoi_bbox = _aoi_from_regions_yaml(regions_yaml)
+    aoi_bbox = aoi_from_regions_yaml(regions_yaml)
     if args.command == "chelsa-monthly":
         if not aoi_bbox:
             raise SystemExit(
@@ -269,7 +216,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         # Lazy import handler (keeps CLI import fast and avoids heavy deps unless used)
         from ingest.fetch_chelsa_monthly import fetch_chelsa_monthly  # type: ignore
 
-        print(f"AOI bbox from config: {_format_bbox(aoi_bbox)}")
+        print(f"AOI bbox from config: {format_bbox(aoi_bbox)}")
         return fetch_chelsa_monthly(
             sources_yaml=sources_yaml,
             aoi_bbox=aoi_bbox,  # type: ignore
