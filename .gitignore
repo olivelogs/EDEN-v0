@@ -5,6 +5,10 @@
 ._*
 .Trashes
 
+# Data Files #
+##############
+*.tif
+
 # Packages #
 ############
 *.7z
