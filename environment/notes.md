@@ -1,76 +1,123 @@
 # Notes  
 
-## overview
+## Running locally, start environment
 
-**in-progress task:** fetch scripts -> CLI
+```bash
+conda activate eden
+```
+  
+## Before starting, in root, run (first install):
 
-v0 reconstructs ecoregions from public data: soil, climate, landcover... once that is done we will build a model to infer ecosystem dynamics. goal: get it to report soil moisture changes after rain. that is all.
+```bash
+pip install -e .
+```
+  
+to tell python where to find packages.
+  
+## Note:  
 
-CLI will call other scripts... should check if file structure is good.
+These are fixes I need to make, since this isn't very smooth:
 
-## general
+- In order to run `fetch_chelsa_monthly.py`, you will need to run `eden.geo prep_ecoregions` to get the AOI bounds.
+  - Then you gotta run 01_region_selection.ipynb to consolidate bounds, and manually add these bounds to the YAML. **Fix for this coming**.
+- I neglected to include the ecoregion shapefile download in `eden.fetch`, so that's manual right now. **Fix for this coming**.
 
-use conda env eden
-note to self: always branch before edits, or cry later.
+## one more note:
 
-## Data  
+workflow assumes **EPSG:4326** (lon/lat).
+  
+---
 
-Data fetch:  
-- `src/ingest/fetch.py`
-- `src/ingest/sources/chelsa.py`, `src/ingest/sources/nlcd.py` = source-specific logic  
-- `config/sources.yaml` = metadata registry (URLs/templates, versions, variables, caching rules, etc.)  
-- one command style (python -m src.ingest.fetch ...)  
-- shared caching/logging/path handling  
-- source modules stay isolated (so CHELSA changes don’t break soils)  
-usage:
-`python -m src.ingest.fetch chelsa-monthly --vars tas pr --start 2011 --end 2020 --aoi conus`   
-`python -m src.ingest.fetch nlcd --year 2016 --aoi conus`  
+#### `config.py`
 
-### Ecoregions  
+one script for shared config utilities.  
+YAML loading, bbox handling, centralized path defaults.
+  
+---
 
-Sticking to L3. North America CEC codes use hierarchal dotted codes (8 -> 8.1 -> 8.1.6); these only go to level III. CONUS EPA codes for level III and IV use alphanumeric (56 at level III or 56h at level IV). In regions_v0.yaml, I'm using the EPA alphanumeric codes in UID. Scheme: EPA_US. When I add in North America (in v1) scheme will change to EPA_CEC for the rest of the codes.  
+## `eden.fetch`
 
-### Soil  
+Data ingestion CLI.
+  
+### `fetch.py`
 
-SSURGO: gNATSGO
-This seems to contain 2025 data only?  
-Manual download  
+args:
+`--dry-run`: print what _would_ happen
+`--overwrite`: perform fetch even if file exists
+`--limit`: mostly for CHELSA download. limits the total number of (`var`, `year`, `month`) combinations processed. For example, with 2 variables and monthly data, `--limit 24` processes one full year.
+  
+`verify` lives in eden.fetch dispatcher. `verify` will check presence of the file.
+  
+**Usage example:**
 
-### Climate  
+```bash
+python -m eden.fetch verify --source all
+```
+  
+#### `fetch_nlcd.py`
 
-CHELSA  
-bioclim: 1981-2010 timestep; global.  
-CHANGE (12-14-25): use CHELSA-monthly.  
-CHELSA data are COGs. Use that.
+- Take resolved config (`sources.yaml`) + CLI choices, render one URL, download one ZIP.
+- If a key is missing from YAML, hard error.
+- Coverage is optional. config can apply defaults, CLI can override. matters for adding outside CONUS.
+- `eden.fetch nlcd` will **not** unzip contents, inspect rasters, clip to AOI, infer band names, zonal stats, aggregation, or any modeling.
+  
+**note**: `--dry-run` is part of `eden.fetch`, needs to be run on fetch; before package.
 
-### Landcover  
+**Usage example:**
+```bash
+python -m eden.fetch --dry-run nlcd --year 2016`
+```
 
-Multi-Resolution Land Characteristics (MRLC)  
-Select a year, maybe two. Recent will be higher-res, i assume.  
+#### `fetch_chelsa_monthly.py`
 
-## Scripts
+> run `eden.geo prep_ecoregions` first, and make sure bounds are in `regions_v0.yaml`! *i'll fix to automate this soon* #TODO 
 
-this has gotten out of hand. need to update.
+- Loops over variables (`tas`, `pr`, etc.), years (e.g. `2011–2020`), months (`01–12`).
+- Render the URL from `sources.yaml`
+- Open the remote COG with GDAL’s `/vsicurl/`, and read *only* the AOI bbox.
+- Write a small local GeoTIFF to `data/interim/rasters/clipped/chelsa-monthly/…`.
+- Respects `eden.fetch` top-level commands: `--dry-run`, `--overwrite`, `--limit`.
+- Resolve output directory, build iterable of (`var`, `year`, `month`), optionally slice by --limit
+- `eden.fetch chelsa-monthly` pulls already-clipped rasters, but will **not** do zonal stats, aggregation, or any modeling.
 
-`prep_ecoregions.py`  
+**Usage example:**
 
-- reads `regions.yaml` (scheme/level/code + scheme-agnostic `uid`)  
-- loads the EPA CONUS Level III shapefile (`data/raw/boundaries/epa_ecoregions/conus_level3.shp`)  
-- auto-detects the “Level III code” column  
-- normalizes codes ("07", 7, "7" all match)
-- fixes invalid geometries
-- optionally dissolves to 1 row per ecoregion
-- writes `ecoregions_selected.gpkg`
-- optionally writes a QA CSV (areas, etc.)
+```bash
+python -m eden.fetch --dry-run chelsa-monthly --start-year 2011 --end-year 2011 --vars tas pr --limit 2
+```
 
-`01_region_selection.ipynb`  
-pulls those bounds so i can read them, then use them in regions_v0.yaml for fetch scripts. todo: add this to prep_ecoregions to get it done in one go.  
+---
+## `eden.geo`
 
-`fetch.py`
-it follows a URL template, using sources.yaml, and pulls the data from those sources. each data source has its own quirks,
+geospatial processing CLI.
+  
+### `prep_ecoregions.py`
 
-`clip_rasters.py`  
-make CHELSA/NLCD/soils stop being enormous. may be good to tie this into the fetch scripts, get it done right away.
+Load shapefile(s), filter to selected IDs, reproject to a common CRS, save ecoregions_selected.gpkg.
+  
+### `clip_rasters.py`
 
-`zonal_stats.py`  
-turn pixels into features
+clip soil/landcover rasters to a bounding box around selected polygons (faster)
+computes a CONUS bbox from your selected ecoregions
+  
+### `zonal_stats.py`
+
+compute per-polygon summaries (mean, sd, min/max, percent cover, etc.)
+  
+### `build_features.py`
+
+join everything into `region_features.parquet`
+  
+---
+
+### `eden.features`
+
+tabularization
+  
+---
+
+### `eden.model`
+
+modeling
+random forest could be small...
+do i have the gall for a differentiable ecosystem model?
