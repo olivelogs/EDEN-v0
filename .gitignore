@@ -8,6 +8,14 @@
 # Data Files #
 ##############
 *.tif
+*.dbf
+*.prj
+*.sbn
+*.sbx
+*.shp
+*.shp.xml
+*.shx
+
 
 # Packages #
 ############
