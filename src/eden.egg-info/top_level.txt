@@ -1,5 +1,0 @@
-eden
-features
-geo
-ingest
-modeling

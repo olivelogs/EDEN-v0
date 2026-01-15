@@ -23,9 +23,14 @@
 
 # Folders #
 ###########
-tests/__pycache__/
-src/geo/__pycache__/
+__pycache__/
 .pytest_cache/
+eden.egg-info/
 build/
+dist/
 .claude/
 .vscode/
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
