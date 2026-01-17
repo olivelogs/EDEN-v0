@@ -12,15 +12,15 @@ conda activate eden
 pip install -e .
 ```
   
-to tell python where to find packages.
+to tell python where to find packages. 
   
 ## Note:  
 
-These are fixes I need to make, since this isn't very smooth:
+fixes to address in refactor plan:
 
-- In order to run `fetch_chelsa_monthly.py`, you will need to run `eden.geo prep_ecoregions` to get the AOI bounds.
-  - Then you gotta run 01_region_selection.ipynb to consolidate bounds, and manually add these bounds to the YAML. **Fix for this coming**.
-- I neglected to include the ecoregion shapefile download in `eden.fetch`, so that's manual right now. **Fix for this coming**.
+- ingest ecoregion shapefile
+- prep ecoregion to get bounds
+- eliminate circular dependency 
 
 ## one more note:
 
@@ -32,7 +32,27 @@ workflow assumes **EPSG:4326** (lon/lat).
 
 one script for shared config utilities.  
 YAML loading, bbox handling, centralized path defaults.
+new: handle read `regions_v0_bounds.parquet` (bounds) and read `regions_v0.gpkg` (geom), which are produced by eden.registry
   
+---
+
+## `eden.registry`
+
+ecoregion handling CLI.
+
+### `registry.py`
+
+dispatcher.
+optional arg: l3 or l4 ecoregion. yaml is only prepared for l3 right now.
+
+### `fetch_ecoregions.py`
+
+fetch ecoregion shapefiles and unzip. uses URL template in `sources.yaml`.
+
+### `prep_ecoregions.py`
+
+Load shapefile(s), filter to selected IDs, reproject to a common CRS, save `data/interim/tables/regions_v0_bounds.parquet` with computed bounds and `data/interim/vectors/regions_v0.gpkg`
+
 ---
 
 ## `eden.fetch`
@@ -47,6 +67,7 @@ args:
 `--limit`: mostly for CHELSA download. limits the total number of (`var`, `year`, `month`) combinations processed. For example, with 2 variables and monthly data, `--limit 24` processes one full year.
   
 `verify` lives in eden.fetch dispatcher. `verify` will check presence of the file.
+`decompress` should live in eden.fetch dispatcher to decompress raw data files.
   
 **Usage example:**
 
@@ -90,34 +111,45 @@ python -m eden.fetch --dry-run chelsa-monthly --start-year 2011 --end-year 2011 
 ## `eden.geo`
 
 geospatial processing CLI.
-  
-### `prep_ecoregions.py`
+structure for snakemake - will implement in v0.1 or v0.2.
 
-Load shapefile(s), filter to selected IDs, reproject to a common CRS, save ecoregions_selected.gpkg.
+### `geo.py`
+
+dispatcher
   
 ### `clip_rasters.py`
 
-clip soil/landcover rasters to a bounding box around selected polygons (faster)
-computes a CONUS bbox from your selected ecoregions
+Uses `regions_v0_bounds.parquet` and/or `regions_v0.gpkg` to clip soil/landcover rasters to a bounding box around selected polygons.
+outputs to `interim/rasters/clipped/...`
   
 ### `zonal_stats.py`
 
-compute per-polygon summaries (mean, sd, min/max, percent cover, etc.)
-  
-### `build_features.py`
+compute per-polygon summaries (mean, sd, min/max, percent cover, etc.). output to `data/interim/tables/zonal_stats.parquet`.
 
-join everything into `region_features.parquet`
+### `qa_geo.py`
+
+quality check on zonal_stats output
   
 ---
 
-### `eden.features`
+## `eden.features`
 
-tabularization
+tabularization. in progress
+
+### `feature_defs.py`
+
+### `build_features.py`
+
+join everything into `region_features.parquet`
+
+### `perturb_features.py`
+
+### `derived_features.py`
+
+### `validate_features.py`
   
 ---
 
 ### `eden.model`
 
-modeling
-random forest could be small...
-do i have the gall for a differentiable ecosystem model?
+modeling with random forest

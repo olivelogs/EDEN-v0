@@ -78,7 +78,7 @@ sources:
     type: raster
     coverage: conus
     pub_date: 2025
-    local_glob: "data/raw/soils/gnatsgo/**/*.tif"
+    local_glob: "data/raw/gnatsgo/*.7z" # Update glob when we decompress, idk what files are in the 7z
     notes: "SSURGO where available; filled with STATSGO2 elsewhere. Downloaded from Box, see README for instructions."
 
   nlcd:
@@ -100,3 +100,12 @@ sources:
       start_year: 1985
       end_year: 2024
     url_template: "{base_url}/{temporal_path}_NLCD_{product}_{year}_{coverage_code}_C{collection}V{version}.zip"
+
+  ecoregions:
+    provider: EPA
+    product: "us_eco_l3"
+    type: shapefile
+    coverage: us
+    coverage_path: "us"
+    base_url: "https://dmap-prod-oms-edc.s3.us-east-1.amazonaws.com/ORD/Ecoregions/"
+    url_template: "{base_url}/{coverage_path/{product}.zip"
