@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 sys.path.insert(0, str(SRC))
 
-from geo import prep_ecoregions as pe
+from eden.registry import prep_ecoregions as pe
 
 def test_normalize_code_nums_and_strings():
     assert pe._normalize_code("07") == "7"

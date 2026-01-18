@@ -105,7 +105,9 @@ sources:
     provider: EPA
     product: "us_eco_l3"
     type: shapefile
-    coverage: us
+    coverage: conus
     coverage_path: "us"
-    base_url: "https://dmap-prod-oms-edc.s3.us-east-1.amazonaws.com/ORD/Ecoregions/"
-    url_template: "{base_url}/{coverage_path/{product}.zip"
+    base_url: "https://dmap-prod-oms-edc.s3.us-east-1.amazonaws.com/ORD/Ecoregions"
+    cache_dir: "data/raw/boundaries/epa_ecoregions"
+    url_template: "{base_url}/{coverage_path}/{product}.zip"
+    notes: "EPA Level III ecoregions for CONUS. ZIP contains shapefile."

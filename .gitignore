@@ -15,6 +15,9 @@
 *.shp
 *.shp.xml
 *.shx
+*.gpkg
+*.parquet
+*.csv
 
 # Packages #
 ############

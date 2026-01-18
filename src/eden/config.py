@@ -3,7 +3,7 @@
 
 Shared configuration utilities for EDEN CLI subsystems.
 
-This module provides common helpers used across eden.fetch, eden.geo, etc.
+This module provides common helpers used across eden.ingest, eden.geo, etc.
 Centralizing these avoids duplication and ensures consistent behavior.
 
 Design notes:

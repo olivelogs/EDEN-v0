@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""eden.fetch
+"""eden.ingest
 
 Data ingestion CLI for EDEN.
 
 This is one of several EDEN subsystem CLIs:
-- eden.fetch  → data ingestion (this file)
-- eden.geo    → geospatial processing
+- eden.registry → region definition (prep-ecoregions, fetch-ecoregions)
+- eden.ingest   → data ingestion (this file)
+- eden.geo      → geospatial processing (clip, zonal stats)
 - eden.features → feature engineering (TODO)
-- eden.model  → ecosystem modeling (TODO)
+- eden.model    → ecosystem modeling (TODO)
 
 Design goals:
 - One entrypoint for ingestion only
@@ -17,14 +18,14 @@ Design goals:
 
 Examples:
   # CHELSA monthly (COG window-read + write AOI subset)
-  python -m eden.fetch chelsa-monthly --aoi config --start-year 2011 --end-year 2020 --vars tas pr
+  python -m eden.ingest chelsa-monthly --aoi config --start-year 2011 --end-year 2020 --vars tas pr
 
   # NLCD Annual bundle
-  python -m eden.fetch nlcd --year 2016 --coverage conus --product LndCov
+  python -m eden.ingest nlcd --year 2016 --coverage conus --product LndCov
 
   # Verify that cached/manual inputs exist
-  python -m eden.fetch verify --source all
-  python -m eden.fetch verify --source gnatsgo
+  python -m eden.ingest verify --source all
+  python -m eden.ingest verify --source gnatsgo
 """
 
 from __future__ import annotations
@@ -106,7 +107,7 @@ class GlobalConfig:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    ap = argparse.ArgumentParser(prog="eden.fetch", description="Fetch/verify datasets for EDEN-v0")
+    ap = argparse.ArgumentParser(prog="eden.ingest", description="Data ingestion for EDEN")
 
     # Global args (available for all subcommands)
     # Default paths are centralized in eden.config for consistency across CLIs
@@ -214,7 +215,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             months = [str(m).zfill(2) for m in months]
 
         # Lazy import handler (keeps CLI import fast and avoids heavy deps unless used)
-        from ingest.fetch_chelsa_monthly import fetch_chelsa_monthly  # type: ignore
+        from eden.ingest.fetch_chelsa_monthly import fetch_chelsa_monthly
 
         print(f"AOI bbox from config: {format_bbox(aoi_bbox)}")
         return fetch_chelsa_monthly(
@@ -243,7 +244,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         coverage_map = src_cfg.get("coverage_map") if isinstance(src_cfg.get("coverage_map"), dict) else {}
         coverage_code = coverage_map.get(coverage, coverage) if coverage else coverage
 
-        from ingest.fetch_nlcd import fetch_nlcd  # type: ignore
+        from eden.ingest.fetch_nlcd import fetch_nlcd
 
         return fetch_nlcd(
             sources_yaml=sources_yaml,

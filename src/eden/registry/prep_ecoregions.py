@@ -390,9 +390,5 @@ Examples:
     return 0
 
 
-# TODO: Add bounds extraction to this script and print.
-# See 01_region_selection.ipynb for the logic to migrate.
-# This would allow prep_ecoregions to update regions YAML with computed bounds.
-
 if __name__ == "__main__":
     raise SystemExit(main())

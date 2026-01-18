@@ -9,4 +9,8 @@ dependencies:
   - pandas
   - geopandas
   - ipykernel
+  - pytest
+  - rasterio
+  - pyarrow
+  - fastparquet
 prefix: /Users/olivelo/opt/miniconda3/envs/eden
